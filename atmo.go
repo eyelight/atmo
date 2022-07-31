@@ -74,6 +74,25 @@ func (a *atmo) ResetAll() {
 	a.alti.reset()
 }
 
+func (a *atmo) Update() error {
+	_, err := a.Temp()
+	if err != nil {
+		return nil, err
+	}
+	_, err = a.Baro()
+	if err != nil {
+		return nil, err
+	}
+	_, err = a.Humi()
+	if err != nil {
+		return nil, err
+	}
+	_, err = a.Alti()
+	if err != nil {
+		return nil, err
+	}
+}
+
 // Temp returns an int32 in celsius milli degrees & an error, updating internal state if no error
 func (a *atmo) Temp() (int32, error) {
 	t, err := a.bme.ReadTemperature()
