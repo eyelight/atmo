@@ -31,6 +31,7 @@ type Atmo interface {
 	Baro() (int32, error)
 	Humi() (int32, error)
 	Alti() (int32, error)
+	Update() error
 	ResetAll()
 }
 
