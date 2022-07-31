@@ -75,23 +75,25 @@ func (a *atmo) ResetAll() {
 	a.alti.reset()
 }
 
+// Update returns an error or nil after calling read/update methods
 func (a *atmo) Update() error {
 	_, err := a.Temp()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	_, err = a.Baro()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	_, err = a.Humi()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	_, err = a.Alti()
 	if err != nil {
-		return nil, err
+		return err
 	}
+	return nil
 }
 
 // Temp returns an int32 in celsius milli degrees & an error, updating internal state if no error
