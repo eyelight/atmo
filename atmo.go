@@ -27,6 +27,10 @@ type Atmo interface {
 	Name() string
 	State() (interface{}, time.Time)
 	StateString() string
+	TempString() string
+	BaroString() string
+	HumiString() string
+	AltiString() string
 	Temp() (int32, error)
 	Baro() (int32, error)
 	Humi() (int32, error)
