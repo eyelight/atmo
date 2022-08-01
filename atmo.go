@@ -106,6 +106,22 @@ func (a *atmo) Temp() (int32, error) {
 	return a.temp.value, nil
 }
 
+func (a *atmo) TempString() string {
+	return a.temp.string(strconv.FormatFloat(ctof(a.Celsius()), 'f', 2, 64), "°F")
+}
+
+func (a *atmo) BaroString() string {
+	return a.baro.string(strconv.FormatFloat(mpatoin(a.baro.value), 'f', 2, 64), "\" Hg")
+}
+
+func (a *atmo) HumiString() string {
+	return a.humi.string(strconv.FormatFloat(toPct(a.humi.value), 'f', 2, 64), "%")
+}
+
+func (a *atmo) AltiString() string {
+	return a.alti.string(strconv.FormatFloat(a.FeetElevation(), 'f', 2, 64), "ft")
+}
+
 // Baro returns the barometric pressure in millipascals (mPa) & and error, updating internal state if no error
 func (a *atmo) Baro() (int32, error) {
 	b, err := a.bme.ReadPressure()
