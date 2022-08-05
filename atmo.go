@@ -37,6 +37,7 @@ type Atmo interface {
 	Alti() (int32, error)
 	Update() error
 	ResetAll()
+	Connected() bool
 }
 
 // New returns a new Atmo object with zeroed-out states; pass a configured bme280.Device and a name
@@ -70,6 +71,11 @@ func (s *state) string(conv, units string) string {
 	ss.WriteString(")")
 	ss.WriteByte(byte(10)) // newline
 	return ss.String()
+}
+
+// Connected returns a bool representing whether or not the bme280.Device is connected
+func (a *atmo) Connected() bool {
+	return a.bme.Connected()
 }
 
 func (a *atmo) ResetAll() {
