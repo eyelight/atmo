@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"tinygo.org/x/drivers/bme280"
+	"tinygo.org/x/drivers/bmp280"
 )
 
 type atmo struct {
-	bme  *bme280.Device
+	bmp  *bmp280.Device
 	name string
 	temp state // value is temperature in milli-Celsius (°C * 1000; c = val/1000)
 	baro state // value is pressure in milliPascals (mPa)
@@ -33,18 +33,18 @@ type Atmo interface {
 	AltiString() string
 	Temp() (int32, error)
 	Baro() (int32, error)
-	Humi() (int32, error)
-	Alti() (int32, error)
+	// Humi() (int32, error)
+	// Alti() (int32, error)
 	Update() error
 	ResetAll()
 	Connected() bool
 }
 
 // New returns a new Atmo object with zeroed-out states; pass a configured bme280.Device and a name
-func New(b *bme280.Device, n string) Atmo {
+func New(b *bmp280.Device, n string) Atmo {
 	t := time.Now()
 	return &atmo{
-		bme:  b,
+		bmp:  b,
 		name: n,
 		temp: state{name: "Temperature", value: 0, since: t},
 		baro: state{name: "Barometer", value: 0, since: t},
@@ -75,7 +75,7 @@ func (s *state) string(conv, units string) string {
 
 // Connected returns a bool representing whether or not the bme280.Device is connected
 func (a *atmo) Connected() bool {
-	return a.bme.Connected()
+	return a.bmp.Connected()
 }
 
 func (a *atmo) ResetAll() {
@@ -95,20 +95,20 @@ func (a *atmo) Update() error {
 	if err != nil {
 		return err
 	}
-	_, err = a.Humi()
-	if err != nil {
-		return err
-	}
-	_, err = a.Alti()
-	if err != nil {
-		return err
-	}
+	// _, err = a.Humi()
+	// if err != nil {
+	// 	return err
+	// }
+	// _, err = a.Alti()
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
 // Temp returns an int32 in celsius milli degrees & an error, updating internal state if no error
 func (a *atmo) Temp() (int32, error) {
-	t, err := a.bme.ReadTemperature()
+	t, err := a.bmp.ReadTemperature()
 	if err != nil {
 		return (-420), err
 	}
@@ -134,7 +134,7 @@ func (a *atmo) AltiString() string {
 
 // Baro returns the barometric pressure in millipascals (mPa) & and error, updating internal state if no error
 func (a *atmo) Baro() (int32, error) {
-	b, err := a.bme.ReadPressure()
+	b, err := a.bmp.ReadPressure()
 	if err != nil {
 		return (-420), err
 	}
@@ -143,24 +143,24 @@ func (a *atmo) Baro() (int32, error) {
 }
 
 // Humi returns the humidity in hundredths of percent; convert to a float somewhere else
-func (a *atmo) Humi() (int32, error) {
-	h, err := a.bme.ReadHumidity()
-	if err != nil {
-		return (-420), err
-	}
-	a.humi.value = h
-	return a.humi.value, nil
-}
+// func (a *atmo) Humi() (int32, error) {
+// 	h, err := a.bmp.ReadHumidity()
+// 	if err != nil {
+// 		return (-420), err
+// 	}
+// 	a.humi.value = h
+// 	return a.humi.value, nil
+// }
 
 // Alti returns the altitude in meters, by wrapping a call to (*bme280.Device).ReadAltitude()
-func (a *atmo) Alti() (int32, error) {
-	alt, err := a.bme.ReadAltitude()
-	if err != nil {
-		return (-420), err
-	}
-	a.alti.value = alt
-	return a.alti.value, nil
-}
+// func (a *atmo) Alti() (int32, error) {
+// 	alt, err := a.bmp.ReadAltitude()
+// 	if err != nil {
+// 		return (-420), err
+// 	}
+// 	a.alti.value = alt
+// 	return a.alti.value, nil
+// }
 
 // State is a Statist interface method, returning the current state and the time.Time 'since' the state was
 func (a *atmo) State() (interface{}, time.Time) {
