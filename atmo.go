@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"tinygo.org/x/drivers/bmp280"
+	"tinygo.org/x/drivers/bme280"
 )
 
 type atmo struct {
-	bmp  *bmp280.Device
+	bmp  *bme280.Device
 	name string
 	temp state // value is temperature in milli-Celsius (°C * 1000; c = val/1000)
 	baro state // value is pressure in milliPascals (mPa)
@@ -33,15 +33,15 @@ type Atmo interface {
 	AltiString() string
 	Temp() (int32, error)
 	Baro() (int32, error)
-	// Humi() (int32, error)
-	// Alti() (int32, error)
+	Humi() (int32, error)
+	Alti() (int32, error)
 	Update() error
 	ResetAll()
 	Connected() bool
 }
 
 // New returns a new Atmo object with zeroed-out states; pass a configured bme280.Device and a name
-func New(b *bmp280.Device, n string) Atmo {
+func New(b *bme280.Device, n string) Atmo {
 	t := time.Now()
 	return &atmo{
 		bmp:  b,
@@ -95,14 +95,14 @@ func (a *atmo) Update() error {
 	if err != nil {
 		return err
 	}
-	// _, err = a.Humi()
-	// if err != nil {
-	// 	return err
-	// }
-	// _, err = a.Alti()
-	// if err != nil {
-	// 	return err
-	// }
+	_, err = a.Humi()
+	if err != nil {
+		return err
+	}
+	_, err = a.Alti()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -143,24 +143,24 @@ func (a *atmo) Baro() (int32, error) {
 }
 
 // Humi returns the humidity in hundredths of percent; convert to a float somewhere else
-// func (a *atmo) Humi() (int32, error) {
-// 	h, err := a.bmp.ReadHumidity()
-// 	if err != nil {
-// 		return (-420), err
-// 	}
-// 	a.humi.value = h
-// 	return a.humi.value, nil
-// }
+func (a *atmo) Humi() (int32, error) {
+	h, err := a.bmp.ReadHumidity()
+	if err != nil {
+		return (-420), err
+	}
+	a.humi.value = h
+	return a.humi.value, nil
+}
 
 // Alti returns the altitude in meters, by wrapping a call to (*bme280.Device).ReadAltitude()
-// func (a *atmo) Alti() (int32, error) {
-// 	alt, err := a.bmp.ReadAltitude()
-// 	if err != nil {
-// 		return (-420), err
-// 	}
-// 	a.alti.value = alt
-// 	return a.alti.value, nil
-// }
+func (a *atmo) Alti() (int32, error) {
+	alt, err := a.bmp.ReadAltitude()
+	if err != nil {
+		return (-420), err
+	}
+	a.alti.value = alt
+	return a.alti.value, nil
+}
 
 // State is a Statist interface method, returning the current state and the time.Time 'since' the state was
 func (a *atmo) State() (interface{}, time.Time) {
