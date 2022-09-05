@@ -5,11 +5,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eyelight/trigger"
 	"tinygo.org/x/drivers/bme280"
 )
 
 type atmo struct {
-	bmp  *bme280.Device
+	bme  *bme280.Device
 	name string
 	temp state // value is temperature in milli-Celsius (°C * 1000; c = val/1000)
 	baro state // value is pressure in milliPascals (mPa)
@@ -25,7 +26,7 @@ type state struct {
 
 type Atmo interface {
 	Name() string
-	State() (interface{}, time.Time)
+	Execute(trigger.Trigger)
 	StateString() string
 	TempString() string
 	BaroString() string
@@ -44,7 +45,7 @@ type Atmo interface {
 func New(b *bme280.Device, n string) Atmo {
 	t := time.Now()
 	return &atmo{
-		bmp:  b,
+		bme:  b,
 		name: n,
 		temp: state{name: "Temperature", value: 0, since: t},
 		baro: state{name: "Barometer", value: 0, since: t},
@@ -75,7 +76,7 @@ func (s *state) string(conv, units string) string {
 
 // Connected returns a bool representing whether or not the bme280.Device is connected
 func (a *atmo) Connected() bool {
-	return a.bmp.Connected()
+	return a.bme.Connected()
 }
 
 func (a *atmo) ResetAll() {
@@ -108,7 +109,7 @@ func (a *atmo) Update() error {
 
 // Temp returns an int32 in celsius milli degrees & an error, updating internal state if no error
 func (a *atmo) Temp() (int32, error) {
-	t, err := a.bmp.ReadTemperature()
+	t, err := a.bme.ReadTemperature()
 	if err != nil {
 		return (-420), err
 	}
@@ -134,7 +135,7 @@ func (a *atmo) AltiString() string {
 
 // Baro returns the barometric pressure in millipascals (mPa) & and error, updating internal state if no error
 func (a *atmo) Baro() (int32, error) {
-	b, err := a.bmp.ReadPressure()
+	b, err := a.bme.ReadPressure()
 	if err != nil {
 		return (-420), err
 	}
@@ -144,7 +145,7 @@ func (a *atmo) Baro() (int32, error) {
 
 // Humi returns the humidity in hundredths of percent; convert to a float somewhere else
 func (a *atmo) Humi() (int32, error) {
-	h, err := a.bmp.ReadHumidity()
+	h, err := a.bme.ReadHumidity()
 	if err != nil {
 		return (-420), err
 	}
@@ -154,7 +155,7 @@ func (a *atmo) Humi() (int32, error) {
 
 // Alti returns the altitude in meters, by wrapping a call to (*bme280.Device).ReadAltitude()
 func (a *atmo) Alti() (int32, error) {
-	alt, err := a.bmp.ReadAltitude()
+	alt, err := a.bme.ReadAltitude()
 	if err != nil {
 		return (-420), err
 	}
@@ -189,6 +190,37 @@ func (a *atmo) StateString() string {
 // Name is a Statist interface method, returning the internal name
 func (a *atmo) Name() string {
 	return a.name
+}
+
+func (a *atmo) Execute(t trigger.Trigger) {
+	t.Error = false
+	if t.Target != a.name {
+		t.Error = true
+		t.Message = string("error - " + a.name + " received a trigger intended for " + t.Target)
+		t.ReportCh <- t
+		return
+	}
+	err := a.Update()
+	if err != nil {
+		t.Error = true
+		t.Message = string("error - " + a.name + " couldn't get sensor update - " + err.Error())
+		t.ReportCh <- t
+		return
+	}
+	switch t.Action {
+	case "All", "all", "":
+		t.Message = string(a.name + " Report: " + a.StateString())
+	case "Temp", "temp", "Temperature", "temperature":
+		t.Message = string(a.name + " Temp: " + a.TempString())
+	case "Hum", "hum", "Humidity", "humidity":
+		t.Message = string(a.name + " Humi: " + a.HumiString())
+	case "Pres", "pres", "Pressure", "pressure", "Baro", "baro", "Barometer", "barometer":
+		t.Message = string(a.name + "Baro: " + a.BaroString())
+	case "Alti", "alti", "Altitude", "altitude":
+		t.Message = string(a.name + "Alt: " + a.AltiString())
+	}
+	t.ReportCh <- t
+	return
 }
 
 // Celsius converts the latest stored milli-Celsius to Celsius & returns it
