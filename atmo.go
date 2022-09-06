@@ -26,7 +26,7 @@ type state struct {
 
 type Atmo interface {
 	Name() string
-	Execute(trigger.Trigger)
+	Execute(t trigger.Trigger)
 	StateString() string
 	TempString() string
 	BaroString() string
