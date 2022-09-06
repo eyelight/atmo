@@ -193,6 +193,7 @@ func (a *atmo) Name() string {
 }
 
 func (a *atmo) Execute(t trigger.Trigger) {
+	println("atmo Execute()...")
 	t.Error = false
 	if t.Target != a.name {
 		t.Error = true
