@@ -67,8 +67,8 @@ func (s *state) string(conv, units string) string {
 	ss.WriteByte(byte(9)) // tab
 	ss.WriteString(conv)  // spit out the passed-in converted string
 	ss.WriteString(units) // spit out the units
-	ss.WriteString(" (since ")
-	ss.WriteString(s.since.Local().String())
+	ss.WriteString("	(since ")
+	ss.WriteString(s.since.Local().Format(time.RFC822))
 	ss.WriteString(")")
 	ss.WriteByte(byte(10)) // newline
 	return ss.String()
@@ -114,6 +114,7 @@ func (a *atmo) Temp() (int32, error) {
 		return (-420), err
 	}
 	a.temp.value = t
+	a.temp.since = time.Now()
 	return a.temp.value, nil
 }
 
@@ -140,6 +141,7 @@ func (a *atmo) Baro() (int32, error) {
 		return (-420), err
 	}
 	a.baro.value = b
+	a.baro.since = time.Now()
 	return a.baro.value, nil
 }
 
@@ -150,6 +152,7 @@ func (a *atmo) Humi() (int32, error) {
 		return (-420), err
 	}
 	a.humi.value = h
+	a.humi.since = time.Now()
 	return a.humi.value, nil
 }
 
@@ -160,6 +163,7 @@ func (a *atmo) Alti() (int32, error) {
 		return (-420), err
 	}
 	a.alti.value = alt
+	a.alti.since = time.Now()
 	return a.alti.value, nil
 }
 
