@@ -49,7 +49,7 @@ func New(b *bme280.Device, n string) Atmo {
 		name: n,
 		temp: state{name: "Temperature", value: 0, since: t},
 		baro: state{name: "Barometer", value: 0, since: t},
-		humi: state{name: "Pressure", value: 0, since: t},
+		humi: state{name: "Humidity", value: 0, since: t},
 		alti: state{name: "Altitude", value: 0, since: t},
 	}
 }
@@ -213,12 +213,12 @@ func (a *atmo) Execute(t trigger.Trigger) {
 		t.Message = string(a.name + " Report: " + a.StateString())
 	case "Temp", "temp", "Temperature", "temperature":
 		t.Message = string(a.name + " Temp: " + a.TempString())
-	case "Hum", "hum", "Humidity", "humidity":
+	case "Hum", "hum", "Humidity", "humidity", "Humi", "humi":
 		t.Message = string(a.name + " Humi: " + a.HumiString())
 	case "Pres", "pres", "Pressure", "pressure", "Baro", "baro", "Barometer", "barometer":
-		t.Message = string(a.name + "Baro: " + a.BaroString())
+		t.Message = string(a.name + " Baro: " + a.BaroString())
 	case "Alti", "alti", "Altitude", "altitude":
-		t.Message = string(a.name + "Alt: " + a.AltiString())
+		t.Message = string(a.name + " Alt: " + a.AltiString())
 	}
 	t.ReportCh <- t
 	return
